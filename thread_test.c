@@ -44,6 +44,7 @@ int main(int argc, char* argv[]) {
 
     printf("Main: return stored at %p\n", result_ptr);
     printf("Main: diceroll was %d\n", result_ptr->value);
+    free(result_ptr);
 
     return 0;
 }
