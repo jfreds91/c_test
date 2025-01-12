@@ -9,6 +9,7 @@
 #define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
 #define NUM_READERS 5
 #define NUM_WRITERS 5
+#define RUN_X_TIMES 10
 
 int resource_counter = 0;  // convention is positive=readers, negative=writer(s)
 int reader_queue = 0;
@@ -34,8 +35,13 @@ typedef struct {
 
 void *do_n_times_with_delay(void *args) {
     /*
-    Expects a struct with (n, func) attributes.
-    Does not accept arguments to func yet
+    Executes a function n times with a delay before each one
+    Args:
+        (function_runner_t *) args
+            ->n (int): number of times to loop
+            ->func (callable): pointer to a function which takes a void pointer and returns a void pointer
+    Returns:
+        (void *) NULL
     */
     function_runner_t *input = (function_runner_t *) args;  // inform compiler this is a pointer to a struct
     int seconds;
@@ -51,10 +57,6 @@ void *read_func(void *args) {
     // READERS HAVE PRIO
     pthread_t mythread = pthread_self();
 
-    // sleep random amount of time
-    int n_seconds = rand() % 5 + 1;  // sleep for 1-5 seconds
-    sleep(n_seconds);
-
     // request permission to read. Once granted, increment reader counter
     pthread_mutex_lock(&lock);
     while (resource_counter < 0) {
@@ -69,8 +71,8 @@ void *read_func(void *args) {
     printf("Thread %lu: READ X: %c\n", mythread, X);
     printf("Thread %lu: there are %d total readers\n", mythread, resource_counter);
 
-    // // hang out here a while to prove other readers seeing me
-    // sleep(1);
+    // hang out here a while to prove other readers seeing me
+    sleep(1);
     //  ---- exit critical section
 
     // decrement reader counter
@@ -87,10 +89,6 @@ void *read_func(void *args) {
 
 void *write_func(void *args) {
     pthread_t mythread = pthread_self();
-
-    // sleep random amount of time
-    int n_seconds = rand() % 5 + 1;  // sleep for 1-5 seconds
-    sleep(n_seconds);
 
     pthread_mutex_lock(&lock);
     while (resource_counter != 0) {
@@ -144,9 +142,13 @@ int main(int argc, char* argv[]) {
 
     // create reader threads
     pthread_t reader_threads[NUM_READERS];
+    function_runner_t reader_args;
+    reader_args.n = RUN_X_TIMES;
+    reader_args.func = &read_func;
+
     for (int i=0; i < NELEMS(reader_threads); i++) {
         // pthread_create takes a pthread_t ADDRESS
-        if (pthread_create(&reader_threads[i], NULL, &read_func, NULL) != 0) {
+        if (pthread_create(&reader_threads[i], NULL, &do_n_times_with_delay, &reader_args) != 0) {
             return 1;
         }
     }
@@ -154,8 +156,11 @@ int main(int argc, char* argv[]) {
     
     // create writer threads
     pthread_t writer_threads[NUM_WRITERS];
+    function_runner_t writer_args;
+    writer_args.n = RUN_X_TIMES;
+    writer_args.func = &write_func;
     for (int i = 0; i < NELEMS(writer_threads); i++) {
-        if (pthread_create(&writer_threads[i], NULL, &write_func, NULL) != 0) {
+        if (pthread_create(&writer_threads[i], NULL, &do_n_times_with_delay, &writer_args) != 0) {
             return 2;
         }
     }
