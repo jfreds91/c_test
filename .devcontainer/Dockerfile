@@ -1,15 +1,13 @@
-# Specify x86-compatible base image
-FROM --platform=linux/amd64 ubuntu:20.04
+FROM gradescope/auto-builds:ubuntu-20.04
+LABEL maintainer="fsgeek@gatech.edu"
 
-# Set the timezone to prevent tzdata from prompting
 ENV DEBIAN_FRONTEND=noninteractive
-RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
-    apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    gdb \
-    tzdata \
-    curl \
-    git \
-    && dpkg-reconfigure --frontend noninteractive tzdata \
-    && apt-get clean
+ENV GATECH=true
+COPY setup.sh /root/setup.sh
+WORKDIR /root
+RUN /bin/bash setup.sh
+RUN rm /root/setup.sh
+
+RUN unset DEBIAN_FRONTEND
+
+CMD /bin/bash

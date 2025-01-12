@@ -1,0 +1,15 @@
+{
+  "name": "Custom Codespace",
+  "image": "ubuntu:20.04",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",        // C/C++ extension for VS Code
+        "ms-vscode.cmake-tools"      // Optional: for CMake-based projects
+      ]
+    }
+  }
+}
