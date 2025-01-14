@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <time.h>
 #include <unistd.h>
+#include "reader.h"
+#include "writer.h"
 
 // https://stackoverflow.com/questions/37538/how-do-i-determine-the-size-of-my-array-in-c
 #define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
@@ -50,75 +52,6 @@ void *do_n_times_with_delay(void *args) {
         sleep(seconds);
         input->func(NULL);
     }
-    return NULL;
-}
-
-void *read_func(void *args) {
-    // READERS HAVE PRIO
-    pthread_t mythread = pthread_self();
-
-    // request permission to read. Once granted, increment reader counter
-    pthread_mutex_lock(&lock);
-    while (resource_counter < 0) {
-        reader_queue++;
-        pthread_cond_wait(read_phase, &lock);
-        reader_queue--;
-    }
-    resource_counter++;
-    pthread_mutex_unlock(&lock);
-
-    //  ---- enter critical section
-    printf("Thread %lu: READ X: %c\n", mythread, X);
-    printf("Thread %lu: there are %d total readers\n", mythread, resource_counter);
-
-    // hang out here a while to prove other readers seeing me
-    sleep(1);
-    //  ---- exit critical section
-
-    // decrement reader counter
-    pthread_mutex_lock(&lock);
-    resource_counter--;
-    if (resource_counter == 0 && reader_queue == 0) {
-        // only signal to writers if there are NO readers active or waiting
-        // no need to signal to readers
-        pthread_cond_signal(write_phase);
-    }
-    pthread_mutex_unlock(&lock);
-    return NULL;
-}
-
-void *write_func(void *args) {
-    pthread_t mythread = pthread_self();
-
-    pthread_mutex_lock(&lock);
-    while (resource_counter != 0) {
-        pthread_cond_wait(write_phase, &lock);
-    }
-    resource_counter--;
-    pthread_mutex_unlock(&lock);
-    
-    // ---- enter critical section
-    printf("Thread %lu: WROTE X: %c\n", mythread, X);
-    printf("Thread %lu: there are %d total readers\n", mythread, resource_counter);
-    // ---- exit critical section
-
-    pthread_mutex_lock(&lock);
-    resource_counter++;
-    // we must check the queue, which is a protected resource, so cannot unlock here
-    // we can't actually signal here because it would be a spurious wakeup
-    bool signal_readers = true;
-    if (reader_queue == 0) {
-        signal_readers = false;
-    }
-    pthread_mutex_unlock(&lock);
-
-    // always broadcast to readers
-    pthread_cond_broadcast(read_phase);
-    if (signal_readers == 0) {
-        // we don't think there are any readers waiting, safe to signal a writer
-        pthread_cond_signal(write_phase);
-    }
-
     return NULL;
 }
 

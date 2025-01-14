@@ -1,11 +1,24 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
-        
-
+      {
+        "name": "Debug C Program",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/hello", // Replace with your compiled binary
+        "args": ["hello from launch.json",],     // Replace with your program arguments
+        "environment": [{"name":"value"}],
+        "cwd": "${workspaceFolder}",          // Set the working directory
+        "stopAtEntry": false,                 // Set to true if you want to stop at main()
+        "externalConsole": false,             // Set to true if you want to use an external console
+        "MIMode": "gdb",                      // Use gdb as the debugger
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": false
+          }
+        ]
+      }
     ]
-}
+  }
