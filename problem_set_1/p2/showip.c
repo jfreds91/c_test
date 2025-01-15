@@ -86,6 +86,12 @@ int getaddrinfo(const char *node,     // e.g. "www.example.com" or IP
                 const struct addrinfo *hints,
                 struct addrinfo **res);
 
+    node: HOST, e.g. www.reddit.com, 192.168.1.1
+        if NULL, it means "any address", which is used for binding to all local addresses in a server
+    service: service name (e.g. http, ssh) or port num (e.g. 80)
+        if NULL, it means "we don't want to resolve a service/port"
+    hints: used to narrow results (IPv6, UDP)
+
 Scenario	                            Returned Results	                                                        Use Case
 Provide node and service	            Resolved addresses for the given hostname and port/service.	                Client connections or specific bindings.
 Set hint.ai_flags (e.g., AI_PASSIVE)	Wildcard addresses for all interfaces.	                                    Server sockets or general-purpose bindings.
@@ -93,11 +99,7 @@ Both node/service and ai_flags	        Resolved addresses with additional query 
 
 */
 
-/*
-Write a simple C program that creates, initializes, and connects a client socket
-to a server socket. You should provide a way to specify the connecting server
-address and port. This can be hardcoded or passed via the command line.
-*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
