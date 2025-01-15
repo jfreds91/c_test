@@ -76,6 +76,6 @@ int main(int argc, char *argv[]) {
         return 3;
     }
 
-    printf("Connection accepted! Socket %d, Client %d", socketfd, clientfd);
+    printf("Connection accepted! Socket %d, Client %d\n", socketfd, clientfd);
     return 0;
 }
