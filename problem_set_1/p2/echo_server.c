@@ -135,7 +135,9 @@ int main(int argc, char *argv[]) {
         if (!fork()) {  // child process
             close(socketfd);  // closes the file for the child. Does not delete it - parent can still listen!
             char *greeting = "Hey Baby Girl";
-            send(clientfd, greeting, strlen(greeting), 0);
+            if (send(clientfd, greeting, strlen(greeting), 0) == -1) {
+                fprintf(stderr, "send failed: %s\n", strerror(errno));
+            }
             printf("Child grote the parent");
             return 0;
         }
