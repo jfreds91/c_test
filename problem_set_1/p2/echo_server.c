@@ -9,6 +9,7 @@
 #include <signal.h>  // sigaction
 #include <sys/wait.h>  // WNOHANG, waitpid
 #include <arpa/inet.h>  // inet_ntop
+#include <ctype.h>  // toupper
 
 /*
 The Echo Protocol
@@ -52,15 +53,15 @@ void *get_sin_addr_from_sockaddr(struct sockaddr *sa) {
         return &(((struct sockaddr_in6 *) sa)->sin6_addr);
     }
     return &(((struct sockaddr_in *) sa)->sin_addr);
-
 }
 
 // convert a string to uppercase in-place
-char *str_to_upper(char *str) {
-    for (int i = 0; str[i] != '\0'; i++) {
-        str[i] = (char)toupper((unsigned char)str[i]);
+void str_to_upper(char *str) {
+    char *c = str;
+    while (*c) {
+        *c = toupper((unsigned char) *c);
+        c++;
     }
-    return str;
 }
 
 int main(int argc, char *argv[]) {
@@ -153,19 +154,20 @@ int main(int argc, char *argv[]) {
             // wait for them to respond
             int recvd_len, recv_buf_size = 100;
             char recv_buf[recv_buf_size];   
-            if ((recvd_len = recv(socketfd, &recv_buf, recv_buf_size - 1, 0)) == -1) {
+
+            if ((recvd_len = recv(socketfd, recv_buf, recv_buf_size - 1, 0)) == -1) {
                 fprintf(stderr, "Error recv: %s\n", strerror(errno));
             } else {
-                recv_buf[recvd_len] = "\0";  // ensure we null-terminate
+                recv_buf[recvd_len] = '\0';  // ensure we null-terminate
             }
             printf("Client: %s\n", recv_buf);
 
             // and now we tell them something and they yell it back at us (rude)
-            char response = str_to_upper(*recv_buf);
-            if (send(socketfd, &response, strlen(&response), 0) == -1) {
+            str_to_upper(recv_buf);  // no need to make a pointer, since this is already an array
+            if (send(socketfd, recv_buf, strlen(recv_buf), 0) == -1) {
                 fprintf(stderr, "send failed: %s\n", strerror(errno));
             }
-            printf("Us: %s\n", response);
+            printf("Us: %s\n", recv_buf);
             return 0;
         }
 
