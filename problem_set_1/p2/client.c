@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
+#include <errno.h>
 
 /*
 Write a simple C program that creates, initializes, and connects a client socket
@@ -78,4 +79,29 @@ int main(int argc, char *argv[]) {
 
     // hooray we are connected!
     printf("We are live with socketfd %d!\n", socketfd);
+
+    // now that we've knocked, it's polite to wait for them to say hello
+    int recvd_len, recv_buf_size = 100;
+    char recv_buf[recv_buf_size];   
+    if ((recvd_len = recv(socketfd, &recv_buf, recv_buf_size - 1, 0)) == -1) {
+        fprintf(stderr, "Error recv: %s\n", strerror(errno));
+    } else {
+        recv_buf[recvd_len] = "\0";  // ensure we null-terminate
+    }
+    printf("Server: %s\n", recv_buf);
+
+    // and now we tell them something and they yell it back at us (rude)
+    char greeting = "wassup wit it";
+    if (send(socketfd, &greeting, strlen(&greeting), 0) == -1) {
+        fprintf(stderr, "send failed: %s\n", strerror(errno));
+    }
+    printf("Us: %s\n", greeting);
+
+    if ((recvd_len = recv(socketfd, &recv_buf, recv_buf_size - 1, 0)) == -1) {
+        fprintf(stderr, "Error recv: %s\n", strerror(errno));
+    } else {
+        recv_buf[recvd_len] = "\0";  // ensure we null-terminate
+    }
+    printf("Server: %s\n", recv_buf);
+    return 0;
 }

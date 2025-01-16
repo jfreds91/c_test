@@ -55,6 +55,14 @@ void *get_sin_addr_from_sockaddr(struct sockaddr *sa) {
 
 }
 
+// convert a string to uppercase in-place
+char *str_to_upper(char *str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        str[i] = (char)toupper((unsigned char)str[i]);
+    }
+    return str;
+}
+
 int main(int argc, char *argv[]) {
 
     // print connection details
@@ -139,8 +147,25 @@ int main(int argc, char *argv[]) {
             char *greeting = "Hey Baby Girl";
             if (send(clientfd, greeting, strlen(greeting), 0) == -1) {
                 fprintf(stderr, "send failed: %s\n", strerror(errno));
+            }  // TODO: confirm that the value returned by send is the size of the buffer. Else have to send more
+            printf("We greeted our visiting client\n");
+
+            // wait for them to respond
+            int recvd_len, recv_buf_size = 100;
+            char recv_buf[recv_buf_size];   
+            if ((recvd_len = recv(socketfd, &recv_buf, recv_buf_size - 1, 0)) == -1) {
+                fprintf(stderr, "Error recv: %s\n", strerror(errno));
+            } else {
+                recv_buf[recvd_len] = "\0";  // ensure we null-terminate
             }
-            printf("Child grote the client\n");
+            printf("Client: %s\n", recv_buf);
+
+            // and now we tell them something and they yell it back at us (rude)
+            char response = str_to_upper(*recv_buf);
+            if (send(socketfd, &response, strlen(&response), 0) == -1) {
+                fprintf(stderr, "send failed: %s\n", strerror(errno));
+            }
+            printf("Us: %s\n", response);
             return 0;
         }
 
