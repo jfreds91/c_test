@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
             int recvd_len, recv_buf_size = 100;
             char recv_buf[recv_buf_size];   
 
-            if ((recvd_len = recv(socketfd, recv_buf, recv_buf_size - 1, 0)) == -1) {
+            if ((recvd_len = recv(clientfd, recv_buf, recv_buf_size - 1, 0)) == -1) {
                 fprintf(stderr, "Error recv: %s\n", strerror(errno));
             } else {
                 recv_buf[recvd_len] = '\0';  // ensure we null-terminate
@@ -164,13 +164,12 @@ int main(int argc, char *argv[]) {
 
             // and now we tell them something and they yell it back at us (rude)
             str_to_upper(recv_buf);  // no need to make a pointer, since this is already an array
-            if (send(socketfd, recv_buf, strlen(recv_buf), 0) == -1) {
+            if (send(clientfd, recv_buf, recvd_len, 0) == -1) {
                 fprintf(stderr, "send failed: %s\n", strerror(errno));
             }
             printf("Us: %s\n", recv_buf);
             return 0;
         }
-
     }
     return 0;
 }

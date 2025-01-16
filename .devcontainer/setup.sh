@@ -24,7 +24,8 @@ apt-get update && apt-get install -y \
     libtool \
     pkg-config \
     grpc-cs6200 \
-    protobuf-cs6200
+    protobuf-cs6200 \
+    lsof
 
 python3 -m pip install --upgrade pip
 
