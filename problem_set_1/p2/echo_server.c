@@ -1,3 +1,4 @@
+#include <unistd.h>  // fork(), close()
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -7,6 +8,7 @@
 #include <errno.h>
 #include <signal.h>  // sigaction
 #include <sys/wait.h>  // WNOHANG, waitpid
+#include <arpa/inet.h>  // inet_ntop
 
 /*
 The Echo Protocol
@@ -116,7 +118,7 @@ int main(int argc, char *argv[]) {
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGCHLD, &sa, NULL) == -1) {
         fprintf(stderr, "sigaction");
-        exit(3);
+        return 3;
     }
 
     // Accept incoming connections
