@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
             if (send(clientfd, greeting, strlen(greeting), 0) == -1) {
                 fprintf(stderr, "send failed: %s\n", strerror(errno));
             }
-            printf("Child grote the parent");
+            printf("Child grote the client\n");
             return 0;
         }
 
